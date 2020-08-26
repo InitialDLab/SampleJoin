@@ -1,0 +1,19 @@
+Download twitter_rv.net from http://an.kaist.ac.kr/traces/WWW2010.html.
+
+Once you decompress the tarball or the zip file, you'll have a single large
+anonymous link graph as a list of edges in twitter_rv.net. We did not directly
+use that one because it was too large for full join to finish in reasonable
+amount of time. Instead, we generated a smaller one as follows.
+
+1. It was first truncated to only contains edge with both ID <= 13996412. 
+2. It was enlarged by 50 times by duplicating the edges. For the ith duplicate
+(2<=i<=50), the 13996412 * i is added to both end of the edges. The result is
+the twitter-user table.
+3. Find a list of IDs that have a degree >= 10000 in twitter_rv.net. Then
+select all edges in 2.txt with either end in that list into 1.txt.
+4. Duplicate 1.txt by 50x the same way as in step 2 to get 1_50x.txt. This is
+the popular-user table.
+
+The end result should be around 19GB for 2_50x.txt and 3.1GB for 1_50x.txt.
+The datasets in Figure 7 scalability test are similar to what described above
+but with different duplication numbers.

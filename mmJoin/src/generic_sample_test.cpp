@@ -22,6 +22,10 @@
 #include "database/DynamicIndex.h"
 #include "database/olkenIndex.h"
 
+static_assert(
+    sizeof(weight_t) == 8,
+    "expecting int64_t as weight_t");
+
 // if we are running a long running experiment (such as baseline) we exit after this
 // many seconds
 double experiment_timeout = 3600.0 * 24;
@@ -80,6 +84,7 @@ void TCP3(int sf=10)
 
     std::cout << "adaptive..." << std::endl;
     // do experiment for adaptive
+    if (!settings.no_adaptive)
     for (int warmup_size = 1; warmup_size < 3; ++warmup_size)
     {
         std::ofstream output_file;
@@ -127,7 +132,7 @@ void TCP3(int sf=10)
 
     std::cout << "DP..." << std::endl;
     // do experiment for DP
-    {
+    if (!settings.no_DP) {
         std::ofstream output_file;
         output_file.open(std::to_string(sf) + "x_Q3_jefast.txt");
         for (int trial = 0; trial < settings.trials; ++trial) {

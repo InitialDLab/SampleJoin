@@ -13,8 +13,8 @@
 #include "Table.h"
 #include "DatabaseSharedTypes.h"
 #include "jefastLevel.h"
-#include "jefastFork.h"
 
+static constexpr const jfkey_t virtual_key = 0;
 
 class jefastIndexBase {
 public:
@@ -22,9 +22,9 @@ public:
     {};
 
     // get the total number of join possibilities.
-    virtual int64_t GetTotal() = 0;
+    virtual weight_t GetTotal() = 0;
 
-    virtual void GetJoinNumber(int64_t joinNumber, std::vector<int64_t> &out)= 0;
+    virtual void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out)= 0;
 
     virtual void GetRandomJoin(std::vector<int64_t> &out) = 0;
 
@@ -39,9 +39,9 @@ public:
     {};
 
     // get the total number of join possibilities.
-    int64_t GetTotal();
+    weight_t GetTotal();
 
-    void GetJoinNumber(int64_t joinNumber, std::vector<int64_t> &out);
+    void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out);
 
     void GetRandomJoin(std::vector<int64_t> &out);
 
@@ -86,3 +86,32 @@ private:
     friend class jefastBuilderWJoinAttribSelection;
     friend class jefastBuilderWNonJoinAttribSelection;
 };
+
+class jefastIndexFork: public jefastIndexBase {
+public:
+    ~jefastIndexFork() {}
+
+    weight_t GetTotal() {
+        return m_start_weight;
+    }
+
+    void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out);
+
+    void GetRandomJoin(std::vector<int64_t> &out);
+
+    int GetNumberOfLevels() {
+        return (int) m_levels.size() + 1;
+    }
+
+private:
+    std::vector<std::shared_ptr<JefastLevel<jfkey_t> > > m_levels;
+    std::vector<int> m_parent_tables;
+    std::vector<bool> m_is_last_child;
+    weight_t m_start_weight;
+
+    std::default_random_engine m_generator;
+    std::uniform_int_distribution<weight_t> m_distribution;
+
+    friend class JefastBuilder;
+};
+

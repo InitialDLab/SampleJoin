@@ -25,6 +25,8 @@ set(DATABASE_TABLES
 	database/TableLineitem.cpp
 	database/TableLineitem.h
     database/olkenIndex.h
+    database/Int64CSVTable.h
+    database/Int64CSVTable.cpp
 )
 
 SET(JEFAST_FILES
@@ -38,8 +40,6 @@ SET(JEFAST_FILES
 	database/jefastFilter.h
 	database/jefastBuilder.cpp
 	database/jefastBuilder.h
-	database/jefastFork.cpp
-	database/jefastFork.h
 	database/jefastBuilderWJoinAttribSelection.cpp
 	database/jefastBuilderWJoinAttribSelection.h
 	database/jefastBuilderWNonJoinAttribSelection.cpp
@@ -57,6 +57,7 @@ set(UTILITY_FILES
 	util/accumulator.h
 	util/joinSettings.cpp
 	util/joinSettings.h
+    util/cpp_macros.h
 )
 
 set(DATABASE_FILES
@@ -90,6 +91,17 @@ set(ADAPTIVE_SAMPLING_FILES
     database/DynamicIndex.h
     )
 
+add_library(db_lib ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
+add_library(db_lib_uint128 ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
+target_compile_definitions(db_lib_uint128 PUBLIC USE_UINT128_WEIGHT)
+
+ADD_EXECUTABLE(generic_sample_test generic_sample_test.cpp)
+target_link_libraries(generic_sample_test db_lib)
+
+ADD_EXECUTABLE(tpcds_sample_queries tpcds_sample_queries.cpp)
+target_link_libraries(tpcds_sample_queries db_lib_uint128)
+
+
 #ADD_EXECUTABLE(query0_test query0_main.cpp ${DATABASE_TABLES} ${UTILITY_FILES} ${JEFAST_FILES})
 
 #ADD_EXECUTABLE(query3_test query3_main.cpp ${DATABASE_TABLES} ${UTILITY_FILES} ${JEFAST_FILES})
@@ -114,8 +126,6 @@ set(ADAPTIVE_SAMPLING_FILES
 
 #ADD_EXECUTABLE(iid_test iid_test.cpp ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
 #target_link_libraries(iid_test ${CMAKE_THREAD_LIBS_INIT})
-
-ADD_EXECUTABLE(generic_sample_test generic_sample_test.cpp ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
 
 #ADD_EXECUTABLE(condition_sample_test condition_sample_test.cpp ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
 

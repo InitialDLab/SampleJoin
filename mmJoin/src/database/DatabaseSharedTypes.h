@@ -21,7 +21,13 @@ typedef int64_t jefastTime_t;
 
 // for the dynamic programming technique, we will use the following structures for the index:
 typedef jfkey_t jefastKey_t;
+
+#ifdef USE_UINT128_WEIGHT
+#include "../util/int128_support.h"
+typedef uint128_t weight_t;
+#else
 typedef int64_t weight_t;
+#endif
 
 // for this tuple:
 //   0- the number of unique join tuples which can be produced starting at this vertex

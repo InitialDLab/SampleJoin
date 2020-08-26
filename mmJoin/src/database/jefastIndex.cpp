@@ -10,11 +10,11 @@
 #include <random>
 #include <queue>
 
-int64_t jefastIndexLinear::GetTotal() {
+weight_t jefastIndexLinear::GetTotal() {
     return start_weight;
 }
 
-void jefastIndexLinear::GetJoinNumber(int64_t joinNumber, std::vector<int64_t> &out) {
+void jefastIndexLinear::GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out) {
     // check if it is out of bounds?
     //if (joinNumber < start_weight)
     //    throw "Out of bounds";
@@ -53,7 +53,7 @@ void jefastIndexLinear::GetJoinNumber(int64_t joinNumber, std::vector<int64_t> &
 }
 
 void jefastIndexLinear::GetRandomJoin(std::vector<int64_t> &out) {
-    int64_t random_join_number = m_distribution(m_generator);
+    weight_t random_join_number = m_distribution(m_generator);
 
     return this->GetJoinNumber(random_join_number, out);
 }
@@ -233,5 +233,76 @@ void jefastIndexLinear::rebuild_initial()
 {
     start_weight = m_levels[0]->GetLevelWeight();
     m_levels[0]->build_starting();
+}
+
+//////////////////////////////////////////////////////
+//// BELOW are implementation for jefastIndexFork ////
+//////////////////////////////////////////////////////
+
+void jefastIndexFork::GetJoinNumber(
+    weight_t joinNumber,
+    std::vector<int64_t> &out) {
+    
+    assert(joinNumber < m_start_weight);
+    out.resize(GetNumberOfLevels());
+
+    // Stores the remaining weights to be used in the subsequent levels
+    // after we traverse through a fork.
+    std::vector<weight_t> rem_weights(m_levels.size());
+    
+    // i is the next table to be sampled, set after the following
+    // if.
+    size_t i;
+    if (m_levels[0].get()) {
+        // We have a virtual level where there is just one
+        // (virtual) key in it and the vertex contains all records
+        // in table[0].
+        rem_weights[0] = joinNumber;
+        m_levels[0]->GetNextStep(
+            virtual_key,
+            rem_weights[0],
+            out[0]);
+        i = 1;
+    } else {
+        // We don't have a virtual level. Just use
+        // GetStartPairStep() to set up the first two
+        // rows simultaneously.
+        rem_weights[1] = joinNumber;
+        m_levels[1]->GetStartPairStep(
+            rem_weights[1],
+            out[0],
+            out[1]);
+        i = 2;
+    }
+
+    // continue through all the remaining tables
+    for (; i < m_levels.size(); ++i) {
+        int lhs_table_number = m_parent_tables[i];
+        int lhs_column = m_levels[i]->get_LHS_table_index();
+        jfkey_t value = m_levels[lhs_table_number]->get_RHS_Table()
+            ->get_int64(out[lhs_table_number], lhs_column);
+        if (m_is_last_child[i]) {
+            // This is either a linear child or the last
+            // child in a fork. Use GetNextStep() as usual,
+            // which saves a modulo op.
+            rem_weights[i] = rem_weights[lhs_table_number];
+            m_levels[i]->GetNextStep(value, rem_weights[i], out[i]);
+        } else {
+            // This is some child other than the last in a fork.
+            // Use GetNextStepThroughFork() to correctly set
+            // the rem_weight of the parent table and the child table.
+            m_levels[i]->GetNextStepThroughFork(
+                value,
+                rem_weights[lhs_table_number], /* parent_weight */
+                rem_weights[i], /* my_weight */
+                out[i]);
+        }
+    }
+}
+
+void jefastIndexFork::GetRandomJoin(std::vector<int64_t> &out) {
+    weight_t random_join_number = m_distribution(m_generator);
+
+    return this->GetJoinNumber(random_join_number, out);
 }
 

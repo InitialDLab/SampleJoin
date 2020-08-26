@@ -23,7 +23,8 @@ public:
     virtual int column_count() = 0;
     virtual int64_t row_count() = 0;
     virtual DATABASE_DATA_TYPES getColumnTypes(int column) = 0;
-
+    
+    // both row and column numbers start from 0
     virtual int32_t get_int(int64_t row, int column);
     virtual int64_t get_int64(int64_t row, int column);
     virtual float get_float(int64_t row, int column);

@@ -246,7 +246,7 @@ public:
         constexpr double err{ 3.2905}; // 99.9% confidence
 
         double s = sqrt((V_sum - S_sum * S_sum / walk_count) / (walk_count - 1));
-        if (isnan(s)) s = 0.0;
+        if (std::isnan(s)) s = 0.0;
 
         //std::cout << "id= " << this->m_value << "est= " << (S_sum / walk_count) << " bound: +" << (S_sum / walk_count) + s * err / sqrt(walk_count) << " max weight: " << this->get_max_weight() << '\n';
 

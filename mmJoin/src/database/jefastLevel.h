@@ -17,6 +17,8 @@
 #include "jefastVertex.h"
 #include "DatabaseSharedTypes.h"
 
+#include "../util/cpp_macros.h"
+
 //typedef std::map<jfkey_t, std::shared_ptr<JefastVertex> > internal_map;
 //typedef btree::btree_map<jfkey_t, std::shared_ptr<JefastVertex> > internal_map;
 typedef std::pair<jfkey_t, std::shared_ptr<JefastVertex> > map_pair_t;
@@ -34,7 +36,7 @@ public:
 
     virtual int64_t getValue() = 0;
     virtual int64_t getRecordId() = 0;
-    virtual int64_t getWeight() = 0;
+    virtual weight_t getWeight() = 0;
     virtual int64_t getVertexValue() = 0;
 };
 
@@ -154,7 +156,7 @@ public:
     {
         return m_observer->getRecordId();
     }
-    int64_t getWeight()
+    weight_t getWeight()
     {
         return m_currWeight;
     }
@@ -233,7 +235,7 @@ public:
     {
         return m_observer->getRecordId();
     }
-    int64_t getWeight()
+    weight_t getWeight()
     {
         return m_currWeight;
     }
@@ -327,6 +329,20 @@ public:
     void GetNextStep(jfkey_t id, weight_t &inout_weight, jfkey_t &out_key) {
         m_data.find(id)->second->get_records(inout_weight, out_key);
     }
+    
+    // the same as GetNextStep() except that we need to first
+    // modulo the total weight of this vertex from the parent_weight to
+    // get the initial weight.
+    //
+    // Note: parent_weight and my_weight must not point to the same
+    // variable
+    void GetNextStepThroughFork(jfkey_t id, weight_t &parent_weight, weight_t &my_weight, jfkey_t &out_key) {
+        auto vertex = m_data.find(id)->second;
+        weight_t tot_weight = vertex->getWeight();
+        my_weight = parent_weight % tot_weight;
+        parent_weight /= tot_weight;
+        vertex->get_records(my_weight, out_key);
+    }
 
     void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2) {
         // find the pair for the weight
@@ -340,12 +356,11 @@ public:
         
 
         // correct if there are multiple possible starting values
-        int LHS_record = inout_weight / record->second->getWeight();
+        size_t LHS_record = inout_weight / record->second->getWeight();
         inout_weight -= (LHS_record) * record->second->getWeight();
-
+    
         auto temp = record->second->getLHSEnumerator();
-        for (;LHS_record >= 0; --LHS_record)
-            temp->Step();
+        temp->Step(LHS_record + 1);
 
         out_key1 = temp->getRecordId();
         record->second->get_records(inout_weight, out_key2);
@@ -483,16 +498,74 @@ public:
         //return 0;
     }
 
+    weight_t fill_weight_fork(
+        const std::vector<std::shared_ptr<JefastLevel<next_value_t>>> &nextLevels,
+        const std::vector<int> &nextLevelIndexes) {
+        assert(nextLevels.size() == nextLevelIndexes.size());
+
+        auto iter =
+            std::make_unique<JefastLevelEnumeratorRHS<next_value_t>>(
+                    m_data.begin(), m_data.end());
+
+        weight_t counter = 0;
+          
+        std::vector<std::vector<jfkey_t>::iterator> tables;
+        tables.reserve(nextLevels.size());
+        for (size_t i = 0; i < nextLevels.size(); ++i) {
+            tables.push_back(mp_RHS_Table->get_key_iterator(
+                nextLevelIndexes[i]));
+        }
+
+        while (iter->Step()) {
+            jfkey_t recordId = iter->getRecordId();
+
+            weight_t w = 1;
+            for (size_t i = 0; i < nextLevels.size(); ++i) {
+                jfkey_t recordValue = tables[i][recordId];
+
+                auto iter2 = nextLevels[i]->m_data.find(recordValue);
+                if (iter2 == nextLevels[i]->m_data.end()) {
+                    w = 0;
+                    break;
+                }
+
+                w *= iter2->second->getWeight();
+            }
+            
+            if (w == 0) continue;
+            iter->setWeight(w);
+            counter += w;
+        }
+    
+        return counter;
+    }
+        
+
     // performs an optimize step to try to store the data
     // better for queries
+    template<bool purge_zero_weights = true>
     void optimize() {
         if (m_optimized)
             throw "already optimized!";
-
-        for (auto itr = m_data.begin(); itr != m_data.end(); ++itr)
-        {
-            itr->second->sort();
-            itr->second->SetupPrefixSum();
+        
+        if (!m_useDefaultVertexWeight) {
+            // For those that use default weight (i.e. equal weights
+            // of 1), we don't have to sort and set up prefix sums,
+            // because we can use the weight as an offset into the 
+            // ID array.
+            for (auto itr = m_data.begin(); itr != m_data.end();)
+            {
+                if_constexpr (purge_zero_weights) {
+                    if (itr->second->getWeight() == 0) {
+                        itr = m_data.erase(itr);
+                        continue;
+                    }
+                    itr->second->purge_zero_weights();
+                }
+                itr->second->sort();
+                itr->second->SetupPrefixSum();
+                ++itr;
+            }
         }
         m_optimized = true;
     }

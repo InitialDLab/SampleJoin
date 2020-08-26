@@ -19,6 +19,9 @@ public:
     // return true if we make a step
     virtual bool Step() = 0;
 
+    // return true if we land on some record after making s steps
+    virtual bool Step(size_t s) = 0;
+
     virtual int64_t getValue() = 0;
     virtual int64_t getRecordId() = 0;
 
@@ -207,6 +210,41 @@ public:
         toRet.reset(new JefastVertexEnumeratorRHS(this));
         return toRet;
     }
+    
+    // Purge all the records with zero weights. This reduces
+    // the number of items in the binary searches of the prefix
+    // sum of weights, and also simplies the logic where we don't
+    // have to move around to find a non-zero weight item.
+    //
+    // Note that the weight vector may be shorter than the record id
+    // vector because of zero weights.
+    void purge_zero_weights() {
+        assert(mp_matching_rhs_record_weight->size() <=
+            m_matching_rhs_record_ids.size());
+        size_t itr_pos = 0;
+        while (itr_pos < mp_matching_rhs_record_weight->size()) {
+            if (mp_matching_rhs_record_weight->at(itr_pos) == 0) {
+                break;
+            }
+            ++itr_pos;
+        }
+
+        size_t ins_pos = itr_pos++; 
+        if (itr_pos < mp_matching_rhs_record_weight->size()) {
+            while (itr_pos < mp_matching_rhs_record_weight->size()) {
+                if (mp_matching_rhs_record_weight->at(itr_pos) > 0) {
+                    m_matching_rhs_record_ids[ins_pos] =
+                        m_matching_rhs_record_ids[itr_pos];
+                    mp_matching_rhs_record_weight->at(ins_pos) =
+                        mp_matching_rhs_record_weight->at(itr_pos);
+                    ++ins_pos;
+                }
+                ++itr_pos;
+            }
+        }
+        m_matching_rhs_record_ids.resize(ins_pos);
+        mp_matching_rhs_record_weight->resize(ins_pos);
+    }
 
     // the way we do a sort is to pack all the data into a sort buffer, sort, than
     // copy the data out of the sort buffer back into the columns.  This makes
@@ -290,6 +328,12 @@ private:
             return (m_idx < mp_vtx->m_matching_rhs_record_ids.size());
         }
 
+        bool Step(size_t s)
+        {
+            m_idx += s;
+            return (m_idx < mp_vtx->m_matching_rhs_record_ids.size());
+        }
+
         int64_t getValue()
         {
             throw "unsupported feature";
@@ -329,6 +373,12 @@ private:
         bool Step()
         {
             ++m_idx;
+            return (m_idx < mp_vtx->m_matching_lhs_record_ids.size());
+        }
+
+        bool Step(size_t s)
+        {
+            m_idx += s;
             return (m_idx < mp_vtx->m_matching_lhs_record_ids.size());
         }
 

@@ -10,12 +10,16 @@ cmake.  The code is written for a C++11 compiler.
 2. install cmake, make, gcc, g++ (>= 4.8)
 3. mkdir build
 4. cd build
-5. cmake -DCMAKE_BUILD_TYPE=Release .. (or Debug if you want to debug it using gdb, also need to change the -O2 to -O0 in CMakeList.txt)
+5. cmake -DCMAKE_BUILD_TYPE=Release .. (or Debug if you want to debug it using gdb)
 6. make
 
 ## Prepare Data
-1. TPC-H. Place generated *.tbl in mmJoin/build/src/${scaleFactor}x/. Rename lineitem.tbl to lineitem_skew.tbl (or change the file path in mmJoin/src/generic_sample_test.cpp). Symbolic links also work.
-2. Twitter graph data from [SNAP](http://snap.stanford.edu/data/). // TODO upload the data preparation tools
+
+Suppose ${CWD} is the work directory and ${SF} is the scale factor of the dataset (TPC-H, TPC-DS). Note that symbolic links should also work.
+
+1. TPC-H. Place generated *.tbl in ${CWD}/${SF}x/. Rename lineitem.tbl to lineitem_skew.tbl (or change the file path in mmJoin/src/generic_sample_test.cpp).
+2. Twitter graph data from [here](http://an.kaist.ac.kr/traces/WWW2010.html). // TODO upload the data preparation tools
+3. TPC-DS. Place generated *.dat in ${CWD}/tpcds_${SF}x/.
 
 
 ## run
@@ -23,6 +27,11 @@ cmake.  The code is written for a C++11 compiler.
 2. ./generic_sample_test [args]
     Use --help and refer to mmJoin/src/generic_sample_test.cpp for help.
     Note: TPC-H queries are named TCPX (X='3', 'X', 'Y') in the source file due to a misspelling.
+3. For TPC-DS run:
+    
+    ./tpcds_sample_test [args]
+
+    It requires __int128 support from GCC >= 4.6.
 
 
 ## licensing
@@ -32,4 +41,5 @@ included. We disclaim any
 warranty for any particular purpose nor shall we be liable to any one
 for using the code.
 
-
+## Updates
+8/26/20: Add two sample general acyclic queries on the TPC-DS dataset.
