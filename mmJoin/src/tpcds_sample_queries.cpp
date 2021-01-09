@@ -102,6 +102,12 @@ bool run_QA() {
 
     std::vector<int> sample_count = { 1000, 10000, 100000, 1000000 };
     
+    // Note: CSV file column ID passed to load() is 1-based, which differs from
+    // the 0-based logical column ID to pass to the get_int64() function. See
+    // the comments in Int64CSVTable.h for an example.
+    //
+    // Hat tip to Shan from Warwick University who pointed out this quirk
+    // in the code.
     auto web_sales = std::make_shared<Int64CSVTable>();
     if (!web_sales->load(
             settings.data_path + "web_sales.dat", {

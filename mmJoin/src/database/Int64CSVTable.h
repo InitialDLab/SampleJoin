@@ -7,6 +7,14 @@
 
 // This is a very simple implementation of a CSV table where only specified
 // columns are extracted and they must be or may be converted to int64.
+//
+// Note: The CSV column numbers passed to load() are 1-based, while column ID
+// and row ID in the class are 0-based.
+// For example, suppose the first line in a CSV file "a.csv" is:
+//  1,2,3,4.
+// And we load the file into an instance of Int64CSVTable using:
+// table.load(file_name, {1, 2, 3, 4}, ',');
+// Then table.get_int64(0, 0) is 1, table.get_int64(0, 1) is 2, ...;
 class Int64CSVTable : public Table {
 public:
     Int64CSVTable() {}
