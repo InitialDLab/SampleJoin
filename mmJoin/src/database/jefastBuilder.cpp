@@ -42,13 +42,14 @@ int JefastBuilder::AddTableToFork(
             // the lhs join index is now associated with the child
             // table.
             assert(m_parentTableNumber.empty());
-            m_parentTableNumber.push_back(-1);
+            m_parentTableNumber.resize(m_joinedTables.size());
             for (unsigned i = m_joinedTables.size() - 1; i > 0; --i) {
                 m_LHSJoinIndex[i] = m_LHSJoinIndex[i - 1]; 
-                m_parentTableNumber.push_back(i - 1);
+                m_parentTableNumber[i] = i - 1;
             }
             m_LHSJoinIndex[0] = -1;
             m_RHSJoinIndex[0] = -1;
+            m_parentTableNumber[0] = -1;
         }
         m_has_fork = true;            
     }
