@@ -93,6 +93,9 @@ set(ADAPTIVE_SAMPLING_FILES
 
 add_library(db_lib ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
 add_library(db_lib_uint128 ${ADAPTIVE_SAMPLING_FILES} ${JEFAST_FILES} ${DATABASE_TABLES} ${UTILITY_FILES})
+message(STATUS ${CMAKE_SOURCE_DIR})
+target_include_directories(db_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(db_lib_uint128 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(db_lib_uint128 PUBLIC USE_UINT128_WEIGHT)
 
 ADD_EXECUTABLE(generic_sample_test generic_sample_test.cpp)
