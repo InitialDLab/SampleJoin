@@ -3,6 +3,26 @@
 #include <fstream>
 #include <cstdlib>
 #include <errno.h>
+#include <cassert>
+#include <iostream>
+
+static void error(unsigned type) {
+    std::cerr << "type=" << type << std::endl;
+}
+
+bool Int64CSVTable::load(std::vector<std::vector<double>>& table, unsigned num_attributes) {
+    std::cerr << "[Int64CSVTable::load] start" << std::endl;
+    m_data.resize(num_attributes);
+    m_n_cols = num_attributes;
+    m_n_rows = table.size();
+    
+    assert(num_attributes == table.front().size());
+    for (const auto& entry: table)
+        for (unsigned index = 0, limit = num_attributes; index != limit; ++index)
+            m_data[index].push_back(static_cast<int64_t>(entry[index]));
+    std::cerr << "[Int64CSVTable::load] stop" << std::endl;
+    return true;
+}
 
 bool Int64CSVTable::load(
     std::string file_name,
@@ -16,6 +36,7 @@ bool Int64CSVTable::load(
 
     std::ifstream fin(file_name);
     if (!fin) {
+        error(1);
         return false;
     }
 
@@ -28,12 +49,14 @@ bool Int64CSVTable::load(
         while (data_col < m_n_cols) {
             if (p >= line.length()) {
                 // missing field
+                error(2);
                 return false;
             }
             while (csv_col < columns[data_col]) {
                 auto p2 = line.find(delimiter, p);
                 if (p2 == std::string::npos) {
                     // missing field
+                    error(3);
                     return false;
                 }
                 p = p2 + 1;
@@ -48,10 +71,12 @@ bool Int64CSVTable::load(
 
             line[p2] = '\0';
             char *str_end;
+            std::cerr << std::string(line.c_str() + p, line.c_str() + line.size()) << std::endl; 
             unsigned long long value = std::strtoull(
                 line.c_str() + p, &str_end, 0);
             if (errno == ERANGE || errno == EINVAL ||
                     str_end != line.c_str() + p2) {
+
                 // invalid conversion
                 return false;
             }

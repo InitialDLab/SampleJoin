@@ -21,6 +21,8 @@ public:
 
     ~Int64CSVTable() {}
     
+    bool load(std::vector<std::vector<double>>& table, unsigned num_attributes);
+
     // Columns contains all the column numbers to be extracted, which
     // starts from 1. Empty lines are skipped in the file.
     //
