@@ -4,6 +4,7 @@
 #include "DatabaseSharedTypes.h"
 #include <string>
 #include <vector>
+#include <cassert>
 
 // This is a very simple implementation of a CSV table where only specified
 // columns are extracted and they must be or may be converted to int64.
@@ -46,6 +47,7 @@ public:
     }
 
     int64_t get_int64(int64_t row, int column) override {
+        assert(row < m_data[column].size());
         return m_data[column][row];
     }
 

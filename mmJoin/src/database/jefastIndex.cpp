@@ -52,6 +52,14 @@ void jefastIndexLinear::GetJoinNumber(weight_t joinNumber, std::vector<int64_t> 
     }
 }
 
+#if 0
+void jefastIndexLinear::GetRandomJoinWithWeights(std::vector<int64_t> &out) {
+    weight_t random_join_number = m_distribution(m_generator);
+
+    return this->GetJoinNumber(random_join_number, out);
+}
+#endif
+
 void jefastIndexLinear::GetRandomJoin(std::vector<int64_t> &out) {
     weight_t random_join_number = m_distribution(m_generator);
 
