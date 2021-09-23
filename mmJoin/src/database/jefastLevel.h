@@ -347,10 +347,18 @@ public:
     void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2) {
         // find the pair for the weight
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
+        
+        for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
+            std::cerr << m_searchWeights[index] << ",";
+        std::cerr << std::endl;
+        
         --w_itr; // we will find the record +1, so we need to correct.
         size_t index = w_itr - m_searchWeights.begin();
 
+        std::cerr << "[GetStartPairStep] before: inout_weight=" << inout_weight << std::endl;
+        std::cerr << "w_itr=" << *w_itr << std::endl;
         inout_weight -= *w_itr;
+        std::cerr << "[GetStartPairStep] after: inout_weight=" << inout_weight << std::endl;
 
         auto record = m_data.find(m_indexes[index]);
         

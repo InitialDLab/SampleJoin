@@ -352,6 +352,8 @@ void jefastIndexFork::GetJoinNumberWithWeights(
     std::vector<int64_t> &out,
     std::vector<weight_t> &join_weights) {
     
+    std::cerr << "#levels=" << GetNumberOfLevels() << std::endl;
+
     assert(joinNumber < m_start_weight);
     out.resize(GetNumberOfLevels());
     join_weights.resize(GetNumberOfLevels());
@@ -366,6 +368,7 @@ void jefastIndexFork::GetJoinNumberWithWeights(
     size_t i;
     // TODO: what to do with weight(0)? Or is the entire vector shifted by one?
     if (m_levels[0].get()) {
+        std::cerr << "first case" << std::endl;
         // We have a virtual level where there is just one
         // (virtual) key in it and the vertex contains all records
         // in table[0].
@@ -378,6 +381,7 @@ void jefastIndexFork::GetJoinNumberWithWeights(
         join_weights[1] = rem_weights[1];
         i = 1;
     } else {
+        std::cerr << "second case" << std::endl;
         // We don't have a virtual level. Just use
         // GetStartPairStep() to set up the first two
         // rows simultaneously.
@@ -390,9 +394,10 @@ void jefastIndexFork::GetJoinNumberWithWeights(
         join_weights[1] = rem_weights[1];
         i = 2;
     }
-
+#if 0
     // continue through all the remaining tables
     for (; i < m_levels.size(); ++i) {
+        std::cerr << "!!!!!!!!!!!!!!!!! insideeeee" << std::endl;
         int lhs_table_number = m_parent_tables[i];
         int lhs_column = m_levels[i]->get_LHS_table_index();
         jfkey_t value = m_levels[lhs_table_number]->get_RHS_Table()
@@ -422,6 +427,7 @@ void jefastIndexFork::GetJoinNumberWithWeights(
             join_weights[i] = rem_weights[i];
         }
     }
+#endif
     std::cerr << "[final] size=" << join_weights.size() << std::endl;
 }
 
@@ -434,7 +440,7 @@ void jefastIndexFork::GetRandomJoinWithWeights(std::vector<int64_t> &out, std::v
     weight_t random_join_number = m_distribution(m_generator);
     this->GetJoinNumberWithWeights(random_join_number, out, join_weights);
     std::cerr << "aftewards=" << join_weights.size() << std::endl;
-    for (auto elem: join_weights) {
+    for (const auto& elem: join_weights) {
         std::cerr << elem << ",";
     }
     std::cerr << std::endl;
