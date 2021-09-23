@@ -25,8 +25,10 @@ public:
     virtual weight_t GetTotal() = 0;
 
     virtual void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out)= 0;
+    virtual void GetJoinNumberWithWeights(weight_t joinNumber, std::vector<int64_t> &out, std::vector<weight_t> &join_weights)= 0;
 
     virtual void GetRandomJoin(std::vector<int64_t> &out) = 0;
+    virtual void GetRandomJoinWithWeights(std::vector<int64_t> &out, std::vector<weight_t> &join_weights) = 0;
 
     // return the number of levels in this jefastIndex
     // (how large a vector will be if a join value is reported)
@@ -42,8 +44,10 @@ public:
     weight_t GetTotal();
 
     void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out);
-
+    void GetJoinNumberWithWeights(weight_t joinNumber, std::vector<int64_t> &out, std::vector<weight_t> &join_weights);
+    
     void GetRandomJoin(std::vector<int64_t> &out);
+    void GetRandomJoinWithWeights(std::vector<int64_t> &out, std::vector<weight_t>& join_weights);
 
     // return the number of levels in this jefastIndex
     // (how large a vector will be if a join value is reported)
@@ -96,8 +100,10 @@ public:
     }
 
     void GetJoinNumber(weight_t joinNumber, std::vector<int64_t> &out);
+    void GetJoinNumberWithWeights(weight_t joinNumber, std::vector<int64_t> &out, std::vector<weight_t>& join_weights);
 
     void GetRandomJoin(std::vector<int64_t> &out);
+    void GetRandomJoinWithWeights(std::vector<int64_t> &out, std::vector<weight_t>& join_weights);
 
     int GetNumberOfLevels() {
         return (int) m_levels.size() + 1;
