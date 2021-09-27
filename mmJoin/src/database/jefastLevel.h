@@ -344,26 +344,24 @@ public:
         vertex->get_records(my_weight, out_key);
     }
 
-    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2) {
+    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2, weight_t* record_weight=nullptr) {
         // find the pair for the weight
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
         
-        for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
-            std::cerr << m_searchWeights[index] << ",";
-        std::cerr << std::endl;
+
+        // for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
+        //     std::cerr << m_searchWeights[index] << ",";
+        // std::cerr << std::endl;
         
         --w_itr; // we will find the record +1, so we need to correct.
         size_t index = w_itr - m_searchWeights.begin();
 
-        std::cerr << "[GetStartPairStep] before: inout_weight=" << inout_weight << std::endl;
-        std::cerr << "w_itr=" << *w_itr << std::endl;
         inout_weight -= *w_itr;
-        std::cerr << "[GetStartPairStep] after: inout_weight=" << inout_weight << std::endl;
-
         auto record = m_data.find(m_indexes[index]);
         
 
         // correct if there are multiple possible starting values
+        if (record_weight) (*record_weight) = record->second->getWeight();
         size_t LHS_record = inout_weight / record->second->getWeight();
         inout_weight -= (LHS_record) * record->second->getWeight();
     
