@@ -359,6 +359,7 @@ public:
         inout_weight -= *w_itr;
         auto record = m_data.find(m_indexes[index]);
         
+        std::cerr << "[GetStartPairStep] w=" << record->second->getWeight() << std::endl;
 
         // correct if there are multiple possible starting values
         if (record_weight) (*record_weight) = record->second->getWeight();

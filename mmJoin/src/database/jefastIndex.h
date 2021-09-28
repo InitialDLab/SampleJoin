@@ -30,6 +30,8 @@ public:
     virtual void GetRandomJoin(std::vector<int64_t> &out) = 0;
     virtual std::vector<weight_t> GetRandomJoinWithWeights(std::vector<int64_t> &out) = 0;
 
+    virtual void GenerateData(size_t count, std::string record_file, std::string weight_file) = 0;
+
     // return the number of levels in this jefastIndex
     // (how large a vector will be if a join value is reported)
     virtual int GetNumberOfLevels() = 0;
@@ -48,6 +50,8 @@ public:
     
     void GetRandomJoin(std::vector<int64_t> &out);
     std::vector<weight_t> GetRandomJoinWithWeights(std::vector<int64_t> &out);
+
+    void GenerateData(size_t count, std::string record_file, std::string weight_file);
 
     // return the number of levels in this jefastIndex
     // (how large a vector will be if a join value is reported)
@@ -104,6 +108,8 @@ public:
 
     void GetRandomJoin(std::vector<int64_t> &out);
     std::vector<weight_t> GetRandomJoinWithWeights(std::vector<int64_t> &out);
+
+    void GenerateData(size_t count, std::string record_file, std::string weight_file);
 
     int GetNumberOfLevels() {
         return (int) m_levels.size() + 1;

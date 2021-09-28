@@ -6,6 +6,7 @@
 #include "jefastLevel.h"
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <random>
 #include <queue>
@@ -102,6 +103,10 @@ std::vector<weight_t> jefastIndexLinear::GetRandomJoinWithWeights(std::vector<in
     weight_t random_join_number = m_distribution(m_generator);
     std::cerr << "inside linear!!!!" << std::endl;
     return this->GetJoinNumberWithWeights(random_join_number, out);
+}
+
+void jefastIndexLinear::GenerateData(size_t count, std::string record_file, std::string weight_file) {
+    // TODO
 }
 
 int jefastIndexLinear::GetNumberOfLevels()
@@ -440,3 +445,35 @@ std::vector<weight_t> jefastIndexFork::GetRandomJoinWithWeights(std::vector<int6
     weight_t random_join_number = m_distribution(m_generator);
     return this->GetJoinNumberWithWeights(random_join_number, out);
 }
+
+void jefastIndexFork::GenerateData(size_t count, std::string record_file, std::string weight_file) {
+    std::vector<int64_t> out;
+    std::ofstream r_out(record_file), w_out(weight_file);
+    assert((r_out.is_open()) && (w_out.is_open()));
+
+    auto writeRecords = [&]() {
+        for (unsigned index = 0, limit = out.size(); index != limit; ++index) {
+            if (index) r_out << ',';
+            r_out << out[index];
+        }
+        r_out << '\n';
+    };
+
+    auto writeWeights = [&](std::vector<weight_t>& ws) {
+        for (unsigned index = 0, limit = ws.size(); index != limit; ++index) {
+            if (index) w_out << ',';
+            w_out << ws[index];
+        }
+        w_out << '\n';
+    };
+
+    for (size_t index = 0; index != count; ++index) {
+        auto ws = GetRandomJoinWithWeights(out);
+        std::cerr << "index=" << index << " ws.size()=" << ws.size() << std::endl;
+        writeRecords();
+        writeWeights(ws);
+    }
+    r_out.close();
+    w_out.close();
+}
+
