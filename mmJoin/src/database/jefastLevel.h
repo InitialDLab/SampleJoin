@@ -326,8 +326,8 @@ public:
     // inout_weight - a counter to indicate which path to go down.  will be updated on return
     // out_key - the key of the LHS item in the join
     // out_next - the value of the next level to traverse.
-    void GetNextStep(jfkey_t id, weight_t &inout_weight, jfkey_t &out_key) {
-        m_data.find(id)->second->get_records(inout_weight, out_key);
+    void GetNextStep(jfkey_t id, weight_t &inout_weight, jfkey_t &out_key, weight_t* record_weight=nullptr) {
+        m_data.find(id)->second->get_records(inout_weight, out_key, record_weight);
     }
     
     // the same as GetNextStep() except that we need to first
@@ -336,15 +336,15 @@ public:
     //
     // Note: parent_weight and my_weight must not point to the same
     // variable
-    void GetNextStepThroughFork(jfkey_t id, weight_t &parent_weight, weight_t &my_weight, jfkey_t &out_key) {
+    void GetNextStepThroughFork(jfkey_t id, weight_t &parent_weight, weight_t &my_weight, jfkey_t &out_key, weight_t* record_weight=nullptr) {
         auto vertex = m_data.find(id)->second;
         weight_t tot_weight = vertex->getWeight();
         my_weight = parent_weight % tot_weight;
         parent_weight /= tot_weight;
-        vertex->get_records(my_weight, out_key);
+        vertex->get_records(my_weight, out_key, record_weight);
     }
 
-    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2, weight_t* record_weight=nullptr) {
+    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2, std::pair<unsigned, weight_t*> record_info = {0, nullptr}) {
         // find the pair for the weight
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
         
@@ -359,10 +359,10 @@ public:
         inout_weight -= *w_itr;
         auto record = m_data.find(m_indexes[index]);
         
-        std::cerr << "[GetStartPairStep] w=" << record->second->getWeight() << std::endl;
+        std::cerr << "[GetStartPairStep] index=" << record_info.first << " w=" << record->second->getWeight() << std::endl;
 
         // correct if there are multiple possible starting values
-        if (record_weight) (*record_weight) = record->second->getWeight();
+        if ((!record_info.first) && (record_info.second)) (*record_info.second) = record->second->getWeight();
         size_t LHS_record = inout_weight / record->second->getWeight();
         inout_weight -= (LHS_record) * record->second->getWeight();
     
@@ -370,7 +370,7 @@ public:
         temp->Step(LHS_record + 1);
 
         out_key1 = temp->getRecordId();
-        record->second->get_records(inout_weight, out_key2);
+        record->second->get_records(inout_weight, out_key2, (record_info.first > 0) ? record_info.second : nullptr);
     }
 
     // inert a new item on the LHS of the join level.  Return true if we created something.

@@ -6,6 +6,7 @@
 #include "jefastLevel.h"
 
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <random>
@@ -105,8 +106,10 @@ std::vector<weight_t> jefastIndexLinear::GetRandomJoinWithWeights(std::vector<in
     return this->GetJoinNumberWithWeights(random_join_number, out);
 }
 
-void jefastIndexLinear::GenerateData(size_t count, std::string record_file, std::string weight_file) {
-    // TODO
+std::pair<std::vector<std::vector<int64_t>>, std::vector<std::vector<uint64_t>>> jefastIndexLinear::GenerateData(size_t count)
+// Generate `count` samples, along with the weights of the tuples.
+{
+    return {};
 }
 
 int jefastIndexLinear::GetNumberOfLevels()
@@ -446,34 +449,28 @@ std::vector<weight_t> jefastIndexFork::GetRandomJoinWithWeights(std::vector<int6
     return this->GetJoinNumberWithWeights(random_join_number, out);
 }
 
-void jefastIndexFork::GenerateData(size_t count, std::string record_file, std::string weight_file) {
-    std::vector<int64_t> out;
-    std::ofstream r_out(record_file), w_out(weight_file);
-    assert((r_out.is_open()) && (w_out.is_open()));
-
-    auto writeRecords = [&]() {
-        for (unsigned index = 0, limit = out.size(); index != limit; ++index) {
-            if (index) r_out << ',';
-            r_out << out[index];
-        }
-        r_out << '\n';
+std::pair<std::vector<std::vector<int64_t>>, std::vector<std::vector<uint64_t>>> jefastIndexFork::GenerateData(size_t count)
+// Generate `count` samples, along with the weights of the tuples.
+{
+    // Convert `weight_t` to `uint64_t`.
+    auto convert = [&](std::vector<weight_t>& ws) {
+        std::vector<uint64_t> transformed;
+        std::transform(ws.begin(), ws.end(), std::back_inserter(transformed), [](auto w) {
+            std::ostringstream stream; stream << w;
+            return static_cast<uint64_t>(std::stoull(stream.str())); 
+        });
+        return std::move(transformed);
     };
 
-    auto writeWeights = [&](std::vector<weight_t>& ws) {
-        for (unsigned index = 0, limit = ws.size(); index != limit; ++index) {
-            if (index) w_out << ',';
-            w_out << ws[index];
-        }
-        w_out << '\n';
-    };
-
+    // And sample.
+    std::vector<std::vector<int64_t>> sampled(count);
+    std::vector<std::vector<uint64_t>> weights(count);
     for (size_t index = 0; index != count; ++index) {
+        std::vector<int64_t> out;
         auto ws = GetRandomJoinWithWeights(out);
-        std::cerr << "index=" << index << " ws.size()=" << ws.size() << std::endl;
-        writeRecords();
-        writeWeights(ws);
+        sampled[index] = std::move(out);
+        weights[index] = convert(ws);
     }
-    r_out.close();
-    w_out.close();
+    return {sampled, weights};
 }
 

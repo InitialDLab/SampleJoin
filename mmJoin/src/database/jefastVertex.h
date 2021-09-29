@@ -167,7 +167,7 @@ public:
         return this->m_weight;
     }
 
-    void get_records(weight_t &inout_weight_condition, jfkey_t &out_record_id) {
+    void get_records(weight_t &inout_weight_condition, jfkey_t &out_record_id, weight_t* record_weight=nullptr) {
         //weight_t counter = inout_weight_condition;
 
         //assert(counter < m_weight);
@@ -176,14 +176,21 @@ public:
 
             // special case
             if (mp_matching_rhs_record_weight->size() == 1) {
-                 out_record_id = m_matching_rhs_record_ids[0];
+                if (record_weight) (*record_weight) = 1;
+                out_record_id = m_matching_rhs_record_ids[0];
                 return;
             }
-
 
             auto w_itr = std::upper_bound(mp_matching_rhs_record_weight->begin(), mp_matching_rhs_record_weight->end(), inout_weight_condition);
             --w_itr;  // we will find the weight we need, but the index will be one less
             size_t index = w_itr - mp_matching_rhs_record_weight->begin();
+
+            // Set the weight (acc. `e-mail/record_weight.txt`)
+            if (index == mp_matching_rhs_record_weight->size()) {
+                if (record_weight) (*record_weight) = m_weight - mp_matching_rhs_record_weight->back();
+            } else {
+                if (record_weight) (*record_weight) = mp_matching_rhs_record_weight->at(index + 1) - mp_matching_rhs_record_weight->at(index);
+            }
 
             inout_weight_condition -= *w_itr;
             out_record_id = m_matching_rhs_record_ids[index];
@@ -193,6 +200,9 @@ public:
             // if we are using default weights we do not need to search though the lists
             out_record_id = m_matching_rhs_record_ids[inout_weight_condition];
             inout_weight_condition -= inout_weight_condition;
+
+            // Set the weight (acc. `e-mail/record_weight.txt`)
+            if (record_weight) (*record_weight) = 1;
             return;
         }
     }
