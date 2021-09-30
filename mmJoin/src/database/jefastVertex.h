@@ -172,10 +172,14 @@ public:
 
         //assert(counter < m_weight);
 
+        std::cerr << "[get_records] start" << std::endl; 
+
         if (mp_matching_rhs_record_weight != nullptr) {
 
+            std::cerr << "[get_records] first branch" << std::endl;
             // special case
             if (mp_matching_rhs_record_weight->size() == 1) {
+                // Fetch the weight (acc. `e-mail/record_weight.txt`)
                 if (record_weight) (*record_weight) = 1;
                 out_record_id = m_matching_rhs_record_ids[0];
                 return;
@@ -186,7 +190,9 @@ public:
             size_t index = w_itr - mp_matching_rhs_record_weight->begin();
 
             // Set the weight (acc. `e-mail/record_weight.txt`)
-            if (index == mp_matching_rhs_record_weight->size()) {
+
+            std::cerr << "[get_records] index=" << index << " size=" << mp_matching_rhs_record_weight->size() << std::endl;
+            if (index == mp_matching_rhs_record_weight->size() - 1) {
                 if (record_weight) (*record_weight) = m_weight - mp_matching_rhs_record_weight->back();
             } else {
                 if (record_weight) (*record_weight) = mp_matching_rhs_record_weight->at(index + 1) - mp_matching_rhs_record_weight->at(index);
@@ -197,6 +203,8 @@ public:
             return;
         }
         else {
+
+            std::cerr << "[get_records] second branch" << std::endl;
             // if we are using default weights we do not need to search though the lists
             out_record_id = m_matching_rhs_record_ids[inout_weight_condition];
             inout_weight_condition -= inout_weight_condition;

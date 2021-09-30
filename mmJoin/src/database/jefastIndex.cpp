@@ -72,7 +72,7 @@ std::vector<weight_t> jefastIndexLinear::GetJoinNumberWithWeights(weight_t joinN
     //    first_phase->Step();
     //}
 
-    this->m_levels.at(0)->GetStartPairStep(current_weight, out[0], out[1]);
+    this->m_levels.at(0)->GetStartPairStep(current_weight, out[0], out[1], {0, &join_weights[0]});
 
     //out.at(0) = first_phase->getRecordId();
     //auto value = first_phase->getVertexValue();
@@ -87,7 +87,7 @@ std::vector<weight_t> jefastIndexLinear::GetJoinNumberWithWeights(weight_t joinN
     // step though each other point.
     for (int i = 1; i < this->m_levels.size(); ++i) {
         //this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1], value);
-        this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1]);
+        this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1], &join_weights[i]);
         if(i+1 < this->m_levels.size())
             value = this->m_levels.at(i)->get_RHS_Table()->get_int64(out[i + 1], this->m_levels.at(i + 1)->get_LHS_table_index());
     }
@@ -382,8 +382,8 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
         m_levels[0]->GetNextStep(
             virtual_key,
             rem_weights[0],
-            out[0]);
-        std::cerr << "index=" << 1 << " w=" << rem_weights[1] << std::endl;
+            out[0],
+            &join_weights[0]);
         i = 1;
     } else {
         std::cerr << "second case" << std::endl;
@@ -395,31 +395,35 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
             rem_weights[1],
             out[0],
             out[1],
-            &join_weights[1]);
-        std::cerr << "!!!! index=" << 1 << " weight=" << join_weights[1] << std::endl;
+            {1, &join_weights[1]});
         i = 2;
     }
     std::cerr << "i=" << i << " size=" << m_levels.size() << std::endl;
-#if 0
+#if 1
     // continue through all the remaining tables
     for (; i < m_levels.size(); ++i) {
+        std::cerr << "[GetJoinNumberWithWeights] main loop i=" << i << std::endl;
         std::cerr << "!!!!!!!!!!!!!!!!! insideeeee" << std::endl;
         int lhs_table_number = m_parent_tables[i];
         int lhs_column = m_levels[i]->get_LHS_table_index();
         jfkey_t value = m_levels[lhs_table_number]->get_RHS_Table()
             ->get_int64(out[lhs_table_number], lhs_column);
         if (m_is_last_child[i]) {
+            std::cerr << "\t [Main Loop] first branch!" << std::endl;
             // This is either a linear child or the last
             // child in a fork. Use GetNextStep() as usual,
             // which saves a modulo op.
             rem_weights[i] = rem_weights[lhs_table_number];
-            m_levels[i]->GetNextStep(value, rem_weights[i], out[i]);
+            std::cerr << "\t[before GetNextStep]" << std::endl;
+            m_levels[i]->GetNextStep(value, rem_weights[i], out[i], &join_weights[i]);
+            std::cerr << "\t[after GetNextStep]" << std::endl;
             std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
         
             // TODO: is this the correct weight?
             // TODO: is it before `GetNextStep`?
             join_weights[i] = rem_weights[i];
         } else {
+            std::cerr << "\t [Main Loop] second branch!" << std::endl;
             // This is some child other than the last in a fork.
             // Use GetNextStepThroughFork() to correctly set
             // the rem_weight of the parent table and the child table.
@@ -427,7 +431,8 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
                 value,
                 rem_weights[lhs_table_number], /* parent_weight */
                 rem_weights[i], /* my_weight */
-                out[i]);
+                out[i],
+                &join_weights[i]);
             std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
             // TODO: is this the correct weight?
             join_weights[i] = rem_weights[i];
