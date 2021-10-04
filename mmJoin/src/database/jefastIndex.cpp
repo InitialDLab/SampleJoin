@@ -109,7 +109,26 @@ std::vector<weight_t> jefastIndexLinear::GetRandomJoinWithWeights(std::vector<in
 std::pair<std::vector<std::vector<int64_t>>, std::vector<std::vector<uint64_t>>> jefastIndexLinear::GenerateData(size_t count)
 // Generate `count` samples, along with the weights of the tuples.
 {
-    return {};
+    // Convert `weight_t` to `uint64_t`.
+    auto convert = [&](std::vector<weight_t>& ws) {
+        std::vector<uint64_t> transformed;
+        std::transform(ws.begin(), ws.end(), std::back_inserter(transformed), [](auto w) {
+            std::ostringstream stream; stream << w;
+            return static_cast<uint64_t>(std::stoull(stream.str())); 
+        });
+        return std::move(transformed);
+    };
+
+    // And sample.
+    std::vector<std::vector<int64_t>> sampled(count);
+    std::vector<std::vector<uint64_t>> weights(count);
+    for (size_t index = 0; index != count; ++index) {
+        std::vector<int64_t> out;
+        auto ws = GetRandomJoinWithWeights(out);
+        sampled[index] = std::move(out);
+        weights[index] = convert(ws);
+    }
+    return {sampled, weights};
 }
 
 int jefastIndexLinear::GetNumberOfLevels()
