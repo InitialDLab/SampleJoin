@@ -338,6 +338,7 @@ public:
     // variable
     void GetNextStepThroughFork(jfkey_t id, weight_t &parent_weight, weight_t &my_weight, jfkey_t &out_key, weight_t* record_weight=nullptr) {
         auto vertex = m_data.find(id)->second;
+        std::cerr << "[throughFork] ---- " << vertex->getWeight() << std::endl;
         weight_t tot_weight = vertex->getWeight();
         my_weight = parent_weight % tot_weight;
         parent_weight /= tot_weight;
@@ -363,6 +364,7 @@ public:
 
         // correct if there are multiple possible starting values
         if ((!record_info.first) && (record_info.second)) (*record_info.second) = record->second->getWeight();
+        //(*record_info.second) = record->second->getWeight();
         size_t LHS_record = inout_weight / record->second->getWeight();
         inout_weight -= (LHS_record) * record->second->getWeight();
     

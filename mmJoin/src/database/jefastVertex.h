@@ -176,11 +176,12 @@ public:
 
         if (mp_matching_rhs_record_weight != nullptr) {
 
-            std::cerr << "[get_records] first branch" << std::endl;
+            std::cerr << "[get_records] first branch mp_matching_rhs.size()=" << mp_matching_rhs_record_weight->size() << std::endl;
             // special case
             if (mp_matching_rhs_record_weight->size() == 1) {
+                std::cerr << "SPEEEEEEEEEEEEEEEEEEECIAL CASE!!!" << " result=" << m_weight - mp_matching_rhs_record_weight->back() << std::endl;
                 // Fetch the weight (acc. `e-mail/record_weight.txt`)
-                if (record_weight) (*record_weight) = 1;
+                if (record_weight) (*record_weight) = m_weight - mp_matching_rhs_record_weight->back();
                 out_record_id = m_matching_rhs_record_ids[0];
                 return;
             }
@@ -271,25 +272,25 @@ public:
     void sort()
     {
         std::vector<key_weight_pair> data;
-        std::cerr << "size=" << m_matching_rhs_record_ids.size() << std::endl;
+        //std::cerr << "size=" << m_matching_rhs_record_ids.size() << std::endl;
         data.resize(m_matching_rhs_record_ids.size());
 
-        for (unsigned index = 0, limit = m_matching_lhs_record_ids.size(); index != limit; ++index) {
-            std::cerr << "index=" << index << " elem=" << m_matching_lhs_record_ids[index] << std::endl;
-        }
+        // for (unsigned index = 0, limit = m_matching_lhs_record_ids.size(); index != limit; ++index) {
+        //     std::cerr << "index=" << index << " elem=" << m_matching_lhs_record_ids[index] << std::endl;
+        // }
 
         {
             // copy the data in
             auto record_itr = m_matching_rhs_record_ids.begin();
-            std::cerr << "vector.size()=" << mp_matching_rhs_record_weight->size() << std::endl;
+           // std::cerr << "vector.size()=" << mp_matching_rhs_record_weight->size() << std::endl;
             auto weight_itr = mp_matching_rhs_record_weight->begin();
             auto input_itr = data.begin();
             auto record_itr_end = m_matching_rhs_record_ids.end();
-            std::cerr << " start first while" << std::endl;
+            //std::cerr << " start first while" << std::endl;
             while (record_itr != record_itr_end)
             {
-                std::cerr << "record_itr=" << *record_itr << std::endl;
-                std::cerr << "weight_itr=" << *weight_itr << std::endl;
+              //  std::cerr << "record_itr=" << *record_itr << std::endl;
+               // std::cerr << "weight_itr=" << *weight_itr << std::endl;
                 input_itr->key = *record_itr;
                 input_itr->weight = *weight_itr;
                 assert(weight_itr != mp_matching_rhs_record_weight->end());
@@ -300,19 +301,19 @@ public:
             }
         }
 
-        std::cerr << "before sort" << std::endl;
+        //std::cerr << "before sort" << std::endl;
 
         // perform the sort operation
         std::sort(data.begin(), data.end(), [](key_weight_pair a, key_weight_pair b) {return a.weight > b.weight;});
         
-        std::cerr << "after sort" << std::endl;
+        //std::cerr << "after sort" << std::endl;
         {
             // copy the data back
             auto record_itr = m_matching_rhs_record_ids.begin();
             auto weight_itr = mp_matching_rhs_record_weight->begin();
             auto input_itr = data.begin();
             auto record_itr_end = m_matching_rhs_record_ids.end();
-            std::cerr << " start second while" << std::endl;
+            //std::cerr << " start second while" << std::endl;
             while (record_itr != record_itr_end)
             {
                 *record_itr = input_itr->key;

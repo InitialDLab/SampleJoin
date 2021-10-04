@@ -395,7 +395,7 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
             rem_weights[1],
             out[0],
             out[1],
-            {1, &join_weights[1]});
+            {0, &join_weights[1]});
         i = 2;
     }
     std::cerr << "i=" << i << " size=" << m_levels.size() << std::endl;
@@ -416,12 +416,12 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
             rem_weights[i] = rem_weights[lhs_table_number];
             std::cerr << "\t[before GetNextStep]" << std::endl;
             m_levels[i]->GetNextStep(value, rem_weights[i], out[i], &join_weights[i]);
-            std::cerr << "\t[after GetNextStep]" << std::endl;
-            std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
+            std::cerr << "\t[after GetNextStep] i=" << i << " weight=" << join_weights[i] << std::endl;
+            //std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
         
             // TODO: is this the correct weight?
             // TODO: is it before `GetNextStep`?
-            join_weights[i] = rem_weights[i];
+            //join_weights[i] = rem_weights[i];
         } else {
             std::cerr << "\t [Main Loop] second branch!" << std::endl;
             // This is some child other than the last in a fork.
@@ -433,9 +433,11 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
                 rem_weights[i], /* my_weight */
                 out[i],
                 &join_weights[i]);
-            std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
+            std::cerr << "\t[after GetNextStepThroughFork] i=" << i << " weight=" << join_weights[i] << std::endl;
+            
+            //std::cerr << "i=" << i << " w=" << rem_weights[i] << std::endl;
             // TODO: is this the correct weight?
-            join_weights[i] = rem_weights[i];
+            //join_weights[i] = rem_weights[i];
         }
     }
 #endif

@@ -26,6 +26,8 @@ int JefastBuilder::AppendTable(std::shared_ptr<Table> table, int RHSIndex, int L
     m_RHSJoinIndex.push_back(RHSIndex);
     m_filters.push_back(std::vector<std::shared_ptr<jefastFilter> >());
 
+    std::cerr << "[AppendTable] joinedTables.size()=" << m_joinedTables.size() << std::endl;
+
     return int(m_joinedTables.size()) - 1;
 }
 
@@ -34,6 +36,9 @@ int JefastBuilder::AddTableToFork(
     int thisTableJoinColIndex,
     int prevTableJoinColIndex,
     int prevTableNumber) {
+
+    std::cerr << "[AddTableToFork] joinedTables.size()=" << m_joinedTables.size() << std::endl;
+
     if (!m_has_fork) {
         if (m_joinedTables.size() > 0) {
             // Fill in the parent table number vec for
@@ -299,6 +304,7 @@ std::shared_ptr<jefastIndexFork> JefastBuilder::BuildFork() {
     } else {
         index->m_levels.push_back(nullptr);
     }
+    //std::cerr << "[builer] m_levels.size()=" << index->m_levels.size() << std::endl;
     for (unsigned i = 1; i < m_joinedTables.size(); ++i) {
         int lhs_table_number = m_parentTableNumber[i];
         auto level = std::make_shared<JefastLevel<jfkey_t>>(
@@ -309,6 +315,7 @@ std::shared_ptr<jefastIndexFork> JefastBuilder::BuildFork() {
         level->set_RHS_table_index(m_RHSJoinIndex[i]);
 
         index->m_levels.push_back(level);
+        //std::cerr << "[builder] i=" << i << " m_levels.size()=" << index->m_levels.size() << std::endl;
     }
 
     // insert the records into the levels
