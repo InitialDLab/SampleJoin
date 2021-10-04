@@ -552,6 +552,7 @@ public:
     // better for queries
     template<bool purge_zero_weights = true>
     void optimize() {
+        std::cerr << "[optimize] enters in optimize!" << std::endl;
         if (m_optimized)
             throw "already optimized!";
         
@@ -562,13 +563,17 @@ public:
             // ID array.
             for (auto itr = m_data.begin(); itr != m_data.end();)
             {
+                std::cerr << "before sort: size=" << itr->second->getter()->size() << std::endl;
+                
                 if_constexpr (purge_zero_weights) {
                     if (itr->second->getWeight() == 0) {
                         itr = m_data.erase(itr);
                         continue;
                     }
+                    std::cerr << " start purging!" << std::endl;
                     itr->second->purge_zero_weights();
                 }
+                std::cerr << "before sort: size=" << itr->second->getter()->size() << std::endl;
                 itr->second->sort();
                 itr->second->SetupPrefixSum();
                 ++itr;
