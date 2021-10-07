@@ -72,7 +72,7 @@ std::vector<weight_t> jefastIndexLinear::GetJoinNumberWithWeights(weight_t joinN
     //    first_phase->Step();
     //}
 
-    this->m_levels.at(0)->GetStartPairStep(current_weight, out[0], out[1], {0, &join_weights[0]});
+    this->m_levels.at(0)->GetStartPairStep(current_weight, out[0], out[1], {&join_weights[0], &join_weights[1]});
 
     //out.at(0) = first_phase->getRecordId();
     //auto value = first_phase->getVertexValue();
@@ -414,7 +414,7 @@ std::vector<weight_t> jefastIndexFork::GetJoinNumberWithWeights(
             rem_weights[1],
             out[0],
             out[1],
-            {0, &join_weights[1]});
+            {&join_weights[0], &join_weights[1]});
         i = 2;
     }
     std::cerr << "i=" << i << " size=" << m_levels.size() << std::endl;

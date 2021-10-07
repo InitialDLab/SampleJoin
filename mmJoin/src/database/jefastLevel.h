@@ -345,7 +345,7 @@ public:
         vertex->get_records(my_weight, out_key, record_weight);
     }
 
-    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2, std::pair<unsigned, weight_t*> record_info = {0, nullptr}) {
+    void GetStartPairStep(weight_t &inout_weight, jfkey_t &out_key1, jfkey_t &out_key2, std::pair<weight_t*, weight_t*> record_info = {nullptr, nullptr}) {
         // find the pair for the weight
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
         
@@ -363,7 +363,7 @@ public:
         std::cerr << "[GetStartPairStep] index=" << record_info.first << " w=" << record->second->getWeight() << std::endl;
 
         // correct if there are multiple possible starting values
-        if ((!record_info.first) && (record_info.second)) (*record_info.second) = record->second->getWeight();
+        if (record_info.first) (*record_info.first) = record->second->getWeight();
         //(*record_info.second) = record->second->getWeight();
         size_t LHS_record = inout_weight / record->second->getWeight();
         inout_weight -= (LHS_record) * record->second->getWeight();
@@ -372,7 +372,7 @@ public:
         temp->Step(LHS_record + 1);
 
         out_key1 = temp->getRecordId();
-        record->second->get_records(inout_weight, out_key2, (record_info.first > 0) ? record_info.second : nullptr);
+        record->second->get_records(inout_weight, out_key2, record_info.second);
     }
 
     // inert a new item on the LHS of the join level.  Return true if we created something.
