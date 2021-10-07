@@ -60,6 +60,8 @@ std::vector<weight_t> jefastIndexLinear::GetJoinNumberWithWeights(weight_t joinN
     //    throw "Out of bounds";
     assert(joinNumber < start_weight);
 
+    std::cerr << "[jefastIndexLinear] #levels=" << this->GetNumberOfLevels() << std::endl;
+
     out.resize(this->GetNumberOfLevels());
     std::vector<weight_t> join_weights(this->GetNumberOfLevels());
 
@@ -87,7 +89,8 @@ std::vector<weight_t> jefastIndexLinear::GetJoinNumberWithWeights(weight_t joinN
     // step though each other point.
     for (int i = 1; i < this->m_levels.size(); ++i) {
         //this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1], value);
-        this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1], &join_weights[i]);
+        // TODO: test whether `join_weights[i + 1]` makes sense!
+        this->m_levels.at(i)->GetNextStep(value, current_weight, out[i + 1], &join_weights[i + 1]);
         if(i+1 < this->m_levels.size())
             value = this->m_levels.at(i)->get_RHS_Table()->get_int64(out[i + 1], this->m_levels.at(i + 1)->get_LHS_table_index());
     }
@@ -125,6 +128,7 @@ std::pair<std::vector<std::vector<int64_t>>, std::vector<std::vector<uint64_t>>>
     for (size_t index = 0; index != count; ++index) {
         std::vector<int64_t> out;
         auto ws = GetRandomJoinWithWeights(out);
+        std::cerr << "ws.size()=" << ws.size() << std::endl;
         sampled[index] = std::move(out);
         weights[index] = convert(ws);
     }

@@ -350,9 +350,10 @@ public:
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
         
 
-        // for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
-        //     std::cerr << m_searchWeights[index] << ",";
-        // std::cerr << std::endl;
+        std::cerr << "DEBUG m_searchWeights!" << std::endl;
+        for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
+            std::cerr << m_searchWeights[index] << ",";
+        std::cerr << std::endl;
         
         --w_itr; // we will find the record +1, so we need to correct.
         size_t index = w_itr - m_searchWeights.begin();
@@ -360,7 +361,7 @@ public:
         inout_weight -= *w_itr;
         auto record = m_data.find(m_indexes[index]);
         
-        std::cerr << "[GetStartPairStep] index=" << record_info.first << " w=" << record->second->getWeight() << std::endl;
+        std::cerr << "[GetStartPairStep] index=" << index << " w=" << record->second->getWeight() << std::endl;
 
         // correct if there are multiple possible starting values
         if (record_info.first) (*record_info.first) = record->second->getWeight();
