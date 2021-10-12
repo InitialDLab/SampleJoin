@@ -338,7 +338,7 @@ public:
     // variable
     void GetNextStepThroughFork(jfkey_t id, weight_t &parent_weight, weight_t &my_weight, jfkey_t &out_key, weight_t* record_weight=nullptr) {
         auto vertex = m_data.find(id)->second;
-        std::cerr << "[throughFork] ---- " << vertex->getWeight() << std::endl;
+        //std::cerr << "[throughFork] ---- " << vertex->getWeight() << std::endl;
         weight_t tot_weight = vertex->getWeight();
         my_weight = parent_weight % tot_weight;
         parent_weight /= tot_weight;
@@ -350,10 +350,10 @@ public:
         auto w_itr = std::upper_bound(m_searchWeights.begin(), m_searchWeights.end(), inout_weight);
         
 
-        std::cerr << "DEBUG m_searchWeights!" << std::endl;
-        for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
-            std::cerr << m_searchWeights[index] << ",";
-        std::cerr << std::endl;
+        // std::cerr << "DEBUG m_searchWeights!" << std::endl;
+        // for (unsigned index = 0, limit = m_searchWeights.size(); index != limit; ++index)
+        //     std::cerr << m_searchWeights[index] << ",";
+        // std::cerr << std::endl;
         
         --w_itr; // we will find the record +1, so we need to correct.
         size_t index = w_itr - m_searchWeights.begin();
@@ -361,7 +361,7 @@ public:
         inout_weight -= *w_itr;
         auto record = m_data.find(m_indexes[index]);
         
-        std::cerr << "[GetStartPairStep] index=" << index << " w=" << record->second->getWeight() << std::endl;
+        // std::cerr << "[GetStartPairStep] index=" << index << " w=" << record->second->getWeight() << std::endl;
 
         // correct if there are multiple possible starting values
         if (record_info.first) (*record_info.first) = record->second->getWeight();
